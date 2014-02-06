@@ -1,0 +1,51 @@
+apply plugin: 'android-library'
+
+dependencies {
+    compile 'com.android.support:support-v4:19.0.+'
+    compile 'com.squareup.okhttp:okhttp:1.3.0'
+    compile files('libs/volley.jar')
+}
+
+version = '1.0.0-SNAPSHOT'
+group = 'io.github.googolmo'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.0.1"
+
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 19
+    }
+
+    release {
+        runProguard false
+        proguardFile 'proguard-rules.txt'
+        proguardFile getDefaultProguardFile('proguard-android.txt')
+    }
+
+    lintOptions {
+        // if true, stop the gradle build if errors are found
+        abortOnError false
+        // turn off checking the given issue id's
+        disable 'TypographyFractions', 'TypographyQuotes'
+        // if true, don't include source code lines in the error output
+        noLines true
+        // if true, generate an XML report for use by for example Jenkins
+        xmlReport true
+        // if true, generate an HTML report (with issue explanations, sourcecode, etc)
+        htmlReport true
+    }
+}
+
+android.libraryVariants.all { variant ->
+    def name = variant.buildType.name
+    // Only attach a jar for non-debug build types.
+    if (!name.equals(com.android.builder.BuilderConstants.DEBUG)) {
+        def task = project.tasks.create "jar${name.capitalize()}", Jar
+        task.dependsOn variant.javaCompile
+        task.from variant.javaCompile.destinationDir
+        artifacts.add('archives', task);
+    }
+}
+

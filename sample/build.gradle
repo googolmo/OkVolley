@@ -1,0 +1,41 @@
+apply plugin: 'android'
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:19.0.+'
+    compile 'com.android.support:support-v4:19.0.+'
+    compile project (':library')
+}
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.0.1"
+
+    defaultConfig {
+        minSdkVersion 10
+        targetSdkVersion 19
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+
+    lintOptions {
+        // if true, stop the gradle build if errors are found
+        abortOnError false
+        // if true, only report errors
+        disable 'TypographyFractions', 'TypographyQuotes'
+        // if true, don't include source code lines in the error output
+        noLines true
+        // if true, generate an XML report for use by for example Jenkins
+        xmlReport true
+        // if true, generate an HTML report (with issue explanations, sourcecode, etc)
+        htmlReport true
+    }
+}
+
+
