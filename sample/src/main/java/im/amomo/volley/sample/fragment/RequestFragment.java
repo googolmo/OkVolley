@@ -10,8 +10,8 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.douban.volley.sample.R;
 import im.amomo.volley.OkRequest;
+import im.amomo.volley.sample.R;
 import im.amomo.volley.toolbox.OkVolley;
 import org.json.JSONObject;
 

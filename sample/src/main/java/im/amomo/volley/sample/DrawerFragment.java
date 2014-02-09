@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import com.douban.volley.sample.R;
 
 /**
  * Created by GoogolMo on 12/30/13.

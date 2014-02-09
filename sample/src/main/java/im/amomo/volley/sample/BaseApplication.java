@@ -2,7 +2,6 @@ package im.amomo.volley.sample;
 
 import android.app.Application;
 import com.android.volley.VolleyLog;
-import com.douban.volley.sample.BuildConfig;
 import im.amomo.volley.toolbox.OkVolley;
 
 /**
