@@ -861,9 +861,11 @@ public abstract class OkRequest<T> extends Request<T> {
 
     }
 
+
     @Override
-    public void setRequestQueue(RequestQueue requestQueue) {
+    public OkRequest<T> setRequestQueue(RequestQueue requestQueue) {
         super.setRequestQueue(requestQueue);
+        return this;
     }
 
     private static String getValidCharset(final String charset) {
