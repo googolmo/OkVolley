@@ -770,7 +770,7 @@ public abstract class OkRequest<T> extends Request<T> {
     }
 
     /**
-     * {@inheritDoc}
+     * get request header
      */
     @Override
     public Map<String, String> getHeaders() throws AuthFailureError {
@@ -785,9 +785,6 @@ public abstract class OkRequest<T> extends Request<T> {
         return headers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected abstract Response<T> parseNetworkResponse(NetworkResponse response);
 
@@ -808,7 +805,7 @@ public abstract class OkRequest<T> extends Request<T> {
     }
 
     /**
-     * @{@inheritDoc}
+     * get request url
      */
     @Override
     public String getUrl() {
@@ -826,7 +823,7 @@ public abstract class OkRequest<T> extends Request<T> {
     }
 
     /**
-     * {@inheritDoc}
+     * get request body content
      */
     @Override
     public String getBodyContentType() {
@@ -834,7 +831,7 @@ public abstract class OkRequest<T> extends Request<T> {
     }
 
     /**
-     * {@inheritDoc}
+     * get request body
      */
     @Override
     public byte[] getBody() throws AuthFailureError {
