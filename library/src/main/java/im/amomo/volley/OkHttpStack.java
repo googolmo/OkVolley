@@ -87,15 +87,7 @@ public class OkHttpStack implements HttpStack {
     @Override
     public HttpResponse performRequest(Request<?> request,
                                        Map<String, String> additionalHeaders) throws IOException, AuthFailureError {
-        if (VolleyLog.DEBUG) {
-            //打印请求的头部信息
-            HashMap<String, String> map = new HashMap<String, String>();
-            map.putAll(request.getHeaders());
-            map.putAll(additionalHeaders);
-            for (String headerName : map.keySet()) {
-                VolleyLog.d("RequestHeader: %1$s:%2$s", headerName, map.get(headerName));
-            }
-        }
+
 
         String url = request.getUrl();
         HashMap<String, String> map = new HashMap<String, String>();
@@ -236,6 +228,13 @@ public class OkHttpStack implements HttpStack {
                 break;
             default:
                 throw new IllegalStateException("Unknown method type.");
+        }
+
+        if (VolleyLog.DEBUG) {
+            //打印请求的头部信息
+            for (String headerName : connection.getRequestProperties().keySet()) {
+                VolleyLog.d("RequestHeader: %1$s:%2$s", headerName, connection.getRequestProperties().get(headerName));
+            }
         }
     }
 
