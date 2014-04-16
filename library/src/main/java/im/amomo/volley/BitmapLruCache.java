@@ -1,7 +1,6 @@
 package im.amomo.volley;
 
 import android.graphics.Bitmap;
-import android.support.v4.util.LruCache;
 
 /**
  * Created by GoogolMo on 10/23/13.
