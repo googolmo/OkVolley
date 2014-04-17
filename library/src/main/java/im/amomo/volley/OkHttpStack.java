@@ -104,6 +104,10 @@ public class OkHttpStack implements HttpStack {
         HttpURLConnection connection = openConnection(parsedUrl, request);
         for (String headerName : map.keySet()) {
             connection.addRequestProperty(headerName, map.get(headerName));
+            if (VolleyLog.DEBUG) {
+                //打印请求的头部信息
+                VolleyLog.d("RequestHeader: %1$s:%2$s", headerName, map.get(headerName));
+            }
         }
         setConnectionParametersForRequest(connection, request);
         // Initialize HttpResponse with data from the HttpURLConnection.
@@ -190,8 +194,11 @@ public class OkHttpStack implements HttpStack {
                     // output stream.
                     connection.setDoOutput(true);
                     connection.setRequestMethod("POST");
-                    connection.addRequestProperty(im.amomo.volley.OkRequest.HEADER_CONTENT_TYPE,
+                    connection.addRequestProperty(OkRequest.HEADER_CONTENT_TYPE,
                             request.getPostBodyContentType());
+                    if (VolleyLog.DEBUG) {
+                        VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getPostBodyContentType());
+                    }
                     DataOutputStream out = new DataOutputStream(connection.getOutputStream());
                     out.write(postBody);
                     out.close();
@@ -230,12 +237,7 @@ public class OkHttpStack implements HttpStack {
                 throw new IllegalStateException("Unknown method type.");
         }
 
-        if (VolleyLog.DEBUG) {
-            //打印请求的头部信息
-            for (String headerName : connection.getRequestProperties().keySet()) {
-                VolleyLog.d("RequestHeader: %1$s:%2$s", headerName, connection.getRequestProperties().get(headerName));
-            }
-        }
+
     }
 
     private static void addBodyIfExists(HttpURLConnection connection, Request<?> request)
@@ -243,7 +245,10 @@ public class OkHttpStack implements HttpStack {
         byte[] body = request.getBody();
         if (body != null) {
             connection.setDoOutput(true);
-            connection.addRequestProperty(im.amomo.volley.OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+            connection.addRequestProperty(OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+            if (VolleyLog.DEBUG) {
+                VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+            }
             DataOutputStream out = new DataOutputStream(connection.getOutputStream());
             out.write(body);
             out.close();
