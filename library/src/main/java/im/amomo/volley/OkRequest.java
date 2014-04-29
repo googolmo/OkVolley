@@ -1,11 +1,14 @@
 package im.amomo.volley;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.Authenticator;
 
@@ -923,5 +926,105 @@ public abstract class OkRequest<T> extends Request<T> {
             else
                 closeable.close();
         }
+    }
+
+    @Override
+    public int getMethod() {
+        return super.getMethod();
+    }
+
+    @Override
+    public Request<?> setTag(Object tag) {
+        return super.setTag(tag);
+    }
+
+    @Override
+    public Object getTag() {
+        return super.getTag();
+    }
+
+    @Override
+    public int getTrafficStatsTag() {
+        return super.getTrafficStatsTag();
+    }
+
+    @Override
+    public Request<?> setRetryPolicy(RetryPolicy retryPolicy) {
+        return super.setRetryPolicy(retryPolicy);
+    }
+
+    @Override
+    public void addMarker(String tag) {
+        super.addMarker(tag);
+    }
+
+    @Override
+    public String getCacheKey() {
+        return super.getCacheKey();
+    }
+
+    @Override
+    public Request<?> setCacheEntry(Cache.Entry entry) {
+        return super.setCacheEntry(entry);
+    }
+
+    @Override
+    public Cache.Entry getCacheEntry() {
+        return super.getCacheEntry();
+    }
+
+    @Override
+    public void cancel() {
+        super.cancel();
+    }
+
+    @Override
+    protected String getParamsEncoding() {
+        return super.getParamsEncoding();
+    }
+
+    @Override
+    public Priority getPriority() {
+        return super.getPriority();
+    }
+
+    @Override
+    public RetryPolicy getRetryPolicy() {
+        return super.getRetryPolicy();
+    }
+
+    @Override
+    public void markDelivered() {
+        super.markDelivered();
+    }
+
+    @Override
+    public boolean hasHadResponseDelivered() {
+        return super.hasHadResponseDelivered();
+    }
+
+    @Override
+    protected VolleyError parseNetworkError(VolleyError volleyError) {
+        return super.parseNetworkError(volleyError);
+    }
+
+    @Override
+    public void deliverError(VolleyError error) {
+        super.deliverError(error);
+    }
+
+    @Override
+    public int compareTo(Request<T> other) {
+        return super.compareTo(other);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    @Override
+    public boolean isCanceled() {
+        return super.isCanceled();
     }
 }
