@@ -11,11 +11,6 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.Authenticator;
-import okio.Buffer;
-import okio.BufferedSink;
-import okio.ByteString;
-import okio.Okio;
-import okio.Sink;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -112,7 +107,7 @@ public abstract class OkRequest<T> extends Request<T> {
      */
     public static final String PARAM_CHARSET = "charset";
 
-    private static final String BOUNDARY = "00abcdefghijk123456789000";
+    private static final String BOUNDARY = "00douban0natalya0volley00";
 
     private static final String CONTENT_TYPE_MULTIPART = "multipart/form-data; boundary="
             + BOUNDARY;
@@ -127,12 +122,8 @@ public abstract class OkRequest<T> extends Request<T> {
 
     private boolean mMultipart;
     private boolean mForm;
-//    private RequestOutputStream mOutput;
-
-    private BufferedSink mOutput;
-
+    private RequestOutputStream mOutput;
     private int mBufferSize = 8192;
-
     private boolean mIgnoreCloseExceptions = true;
     private String mRequestUrl;
 
@@ -188,7 +179,7 @@ public abstract class OkRequest<T> extends Request<T> {
         if (mOutput != null) {
             return this;
         }
-        mOutput = Okio.buffer(Okio.sink(new RequestOutputStream(CHARSET_UTF8)));
+        mOutput = new RequestOutputStream(CHARSET_UTF8);
         return this;
     }
 
@@ -197,9 +188,9 @@ public abstract class OkRequest<T> extends Request<T> {
         if (!mMultipart) {
             mMultipart = true;
             contentType(CONTENT_TYPE_MULTIPART);
-            mOutput.write(ByteString.encodeUtf8("--" + BOUNDARY + CRLF));
+            mOutput.write("--" + BOUNDARY + CRLF);
         } else {
-            mOutput.write(ByteString.encodeUtf8(CRLF + "--" + BOUNDARY + CRLF));
+            mOutput.write(CRLF + "--" + BOUNDARY + CRLF);
         }
         return this;
     }
@@ -280,7 +271,8 @@ public abstract class OkRequest<T> extends Request<T> {
 
         startPart();
         writePartHeader(name, filename, contentType);
-        mOutput.write(ByteString.encodeUtf8(part));
+        mOutput.write(part);
+
         return this;
     }
 
@@ -376,7 +368,7 @@ public abstract class OkRequest<T> extends Request<T> {
         try {
             startPart();
             writePartHeader(name, filename, contentType);
-            mOutput.writeAll(Okio.source(part));
+            copy(part, mOutput);
         } catch (IOException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -433,7 +425,7 @@ public abstract class OkRequest<T> extends Request<T> {
 
         openOutput();
 
-        mOutput.writeAll(Okio.source(input));
+        copy(input, mOutput);
 
         return this;
     }
@@ -451,7 +443,7 @@ public abstract class OkRequest<T> extends Request<T> {
 
         openOutput();
         try {
-            mOutput.write(ByteString.encodeUtf8(value.toString()));
+            mOutput.write(value.toString());
         } catch (IOException e) {
             deliverError(new ParseError(e));
         }
@@ -468,7 +460,7 @@ public abstract class OkRequest<T> extends Request<T> {
      * @param values
      * @return this request
      */
-    public OkRequest<T> form(final Map<String, String> values) throws IOException {
+    public OkRequest<T> form(final Map<String, String> values) {
         return form(values, CHARSET_UTF8);
     }
 
@@ -481,7 +473,7 @@ public abstract class OkRequest<T> extends Request<T> {
      * @param entry
      * @return this request
      */
-    public OkRequest<T> form(final Map.Entry<String, String> entry) throws IOException {
+    public OkRequest<T> form(final Map.Entry<String, String> entry) {
         return form(entry, CHARSET_UTF8);
     }
 
@@ -495,7 +487,7 @@ public abstract class OkRequest<T> extends Request<T> {
      * @param charset
      * @return this request
      */
-    public OkRequest<T> form(final Map.Entry<String, String> entry, final String charset) throws IOException {
+    public OkRequest<T> form(final Map.Entry<String, String> entry, final String charset) {
         return form(entry.getKey(), entry.getValue(), charset);
     }
 
@@ -509,7 +501,7 @@ public abstract class OkRequest<T> extends Request<T> {
      * @param value
      * @return this request
      */
-    public OkRequest<T> form(final String name, final String value) throws IOException {
+    public OkRequest<T> form(final String name, final String value) {
         return form(name, value, CHARSET_UTF8);
     }
 
@@ -524,7 +516,7 @@ public abstract class OkRequest<T> extends Request<T> {
      * @param charset
      * @return this request
      */
-    public OkRequest<T> form(final String name, final String value, String charset) throws IOException {
+    public OkRequest<T> form(final String name, final String value, String charset) {
         final boolean first = !mForm;
         if (first) {
             contentType(PROTOCOL_CONTENT_TYPE_FORM);
@@ -535,16 +527,14 @@ public abstract class OkRequest<T> extends Request<T> {
 
         openOutput();
         if (!first) {
-            mOutput.write(ByteString.encodeUtf8("&"));
+            mOutput.write('&');
         }
         try {
-            if (VolleyLog.DEBUG) {
-                VolleyLog.d("name=%1$s, value=%2$s", name, value);
-            }
-            mOutput.write(ByteString.encodeUtf8(URLEncoder.encode(name, charset)));
-            mOutput.write(ByteString.encodeUtf8("="));
+            VolleyLog.d("name=%1$s, value=%2$s", name, value);
+            mOutput.write(URLEncoder.encode(name, charset));
+            mOutput.write("=");
             if (value != null) {
-                mOutput.write(ByteString.encodeUtf8(URLEncoder.encode(value, charset)));
+                mOutput.write(URLEncoder.encode(value, charset));
             }
         } catch (IOException e) {
             //Do Nothing
@@ -561,7 +551,7 @@ public abstract class OkRequest<T> extends Request<T> {
      * @param charset
      * @return this request
      */
-    public OkRequest<T> form(final Map<String, String> values, final String charset) throws IOException {
+    public OkRequest<T> form(final Map<String, String> values, final String charset) {
         if (!values.isEmpty()) {
             for (Map.Entry<String, String> entry : values.entrySet()) {
                 form(entry, charset);
@@ -853,14 +843,14 @@ public abstract class OkRequest<T> extends Request<T> {
         }
         try {
             if (mMultipart) {
-                mOutput.write(ByteString.encodeUtf8(CRLF + "--" + BOUNDARY + "--" + CRLF));
+
+                mOutput.write(CRLF + "--" + BOUNDARY + "--" + CRLF);
             }
-            return mOutput.buffer().readByteArray();
+            return mOutput.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
-            return mOutput.buffer().readByteArray();
+            return mOutput.toByteArray();
         } finally {
-
             try {
                 mOutput.close();
             } catch (IOException e) {

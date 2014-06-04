@@ -8,7 +8,6 @@ import com.android.volley.Cache;
 import com.android.volley.Network;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.DiskBasedCache;
-import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.Volley;
 import im.amomo.volley.OkHttpStack;
 import im.amomo.volley.OkNetwork;

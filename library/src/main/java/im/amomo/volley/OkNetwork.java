@@ -14,24 +14,19 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ByteArrayPool;
-import com.android.volley.toolbox.PoolingByteArrayOutputStream;
 import com.squareup.okhttp.Response;
 import okio.Buffer;
 import okio.GzipSource;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.cookie.DateUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by GoogolMo on 11/26/13.
@@ -140,6 +135,7 @@ public class OkNetwork implements Network {
                     throw new NoConnectionError(e);
                 }
                 VolleyLog.e("Unexpected response code %d for %s", statusCode, request.getUrl());
+
                 if (responseContents != null) {
                     networkResponse = new NetworkResponse(statusCode, responseContents,
                             responseHeaders, false);
@@ -222,55 +218,6 @@ public class OkNetwork implements Network {
     protected void logError(String what, String url, long start) {
         long now = SystemClock.elapsedRealtime();
         VolleyLog.v("HTTP ERROR(%s) %d ms to fetch %s", what, (now - start), url);
-    }
-
-    /**
-     * Reads the contents of HttpEntity into a byte[].
-     */
-    private byte[] entityToBytes(HttpEntity entity, boolean gzip) throws IOException, ServerError {
-        PoolingByteArrayOutputStream bytes =
-                new PoolingByteArrayOutputStream(mPool, (int) entity.getContentLength());
-        byte[] buffer = null;
-        try {
-            InputStream in;
-            if (gzip) {
-                in = new GZIPInputStream(entity.getContent());
-            } else {
-                in = entity.getContent();
-            }
-
-            if (in == null) {
-                throw new ServerError();
-            }
-            buffer = mPool.getBuf(1024);
-            int count;
-            while ((count = in.read(buffer)) != -1) {
-                bytes.write(buffer, 0, count);
-            }
-            return bytes.toByteArray();
-        } finally {
-            try {
-                // Close the InputStream and release the resources by "consuming the content".
-                entity.consumeContent();
-            } catch (IOException e) {
-                // This can happen if there was an exception above that left the entity in
-                // an invalid state.
-                VolleyLog.v("Error occured when calling consumingContent");
-            }
-            mPool.returnBuf(buffer);
-            bytes.close();
-        }
-    }
-
-    /**
-     * Converts Headers[] to Map<String, String>.
-     */
-    private static Map<String, String> convertHeaders(Header[] headers) {
-        Map<String, String> result = new HashMap<String, String>();
-        for (Header header : headers) {
-            result.put(header.getName(), header.getValue());
-        }
-        return result;
     }
 
 }

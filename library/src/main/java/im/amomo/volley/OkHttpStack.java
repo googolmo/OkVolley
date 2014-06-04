@@ -110,12 +110,14 @@ public class OkHttpStack implements OkStack {
     /* package */
     static void setConnectionParametersForRequest(com.squareup.okhttp.Request.Builder builder,
                                                   Request<?> request) throws IOException, AuthFailureError {
+
+        byte[] postBody = null;
         switch (request.getMethod()) {
             case Method.DEPRECATED_GET_OR_POST:
                 // This is the deprecated way that needs to be handled for backwards compatibility.
                 // If the request's post body is null, then the assumption is that the request is
                 // GET.  Otherwise, it is assumed that the request is a POST.
-                byte[] postBody = request.getPostBody();
+                postBody = request.getPostBody();
                 if (postBody != null) {
                     // Prepare output. There is no need to set Content-Length explicitly,
                     // since this is handled by HttpURLConnection using the size of the prepared
@@ -137,24 +139,34 @@ public class OkHttpStack implements OkStack {
                 builder.delete();
                 break;
             case Method.POST:
-                builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), request.getBody()));
-                if (VolleyLog.DEBUG) {
-                    VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+                postBody = request.getBody();
+                if (postBody != null) {
+                    builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
+                    if (VolleyLog.DEBUG) {
+                        VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+                    }
                 }
+
                 break;
             case Method.PUT:
-                builder.put(RequestBody.create(MediaType.parse(request.getBodyContentType()), request.getBody()));
-                if (VolleyLog.DEBUG) {
-                    VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+                postBody = request.getBody();
+                if (postBody != null) {
+                    builder.put(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
+                    if (VolleyLog.DEBUG) {
+                        VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+                    }
                 }
                 break;
             case Method.HEAD:
                 builder.head();
                 break;
             case Method.PATCH:
-                builder.patch(RequestBody.create(MediaType.parse(request.getBodyContentType()), request.getBody()));
-                if (VolleyLog.DEBUG) {
-                    VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+                postBody = request.getBody();
+                if (postBody != null) {
+                    builder.patch(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
+                    if (VolleyLog.DEBUG) {
+                        VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
+                    }
                 }
                 break;
             default:
