@@ -1,7 +1,7 @@
 apply plugin: 'android-library'
 
 dependencies {
-    compile 'com.squareup.okhttp:okhttp:2.0.0-RC1'
+    compile 'com.squareup.okhttp:okhttp:2.+'
 //    compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0-RC1'
     compile files('libs/volley.jar')
 }
