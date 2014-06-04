@@ -1,7 +1,6 @@
 package im.amomo.volley;
 
 import android.os.SystemClock;
-import android.util.Log;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Cache;
 import com.android.volley.Network;
@@ -15,18 +14,13 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ByteArrayPool;
-import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.PoolingByteArrayOutputStream;
 import com.squareup.okhttp.Response;
 import okio.Buffer;
-import okio.GzipSink;
 import okio.GzipSource;
-import okio.Okio;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.cookie.DateUtils;
 
@@ -181,9 +175,10 @@ public class OkNetwork implements Network {
                                  byte[] responseContents, Response response) {
         if (DEBUG || requestLifetime > SLOW_REQUEST_THRESHOLD_MS) {
             VolleyLog.d("HTTP response for request=<%s> [lifetime=%d], [size=%s], " +
-                    "[rc=%d], [retryCount=%s]", request, requestLifetime,
+                            "[rc=%d], [retryCount=%s]", request, requestLifetime,
                     responseContents != null ? responseContents.length : "null",
-                    response.code(), request.getRetryPolicy().getCurrentRetryCount());
+                    response.code(), request.getRetryPolicy().getCurrentRetryCount()
+            );
         }
     }
 
