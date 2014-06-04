@@ -1,4 +1,4 @@
-package im.amomo.volley.sample.fragment;
+package im.amomo.volley.sample;
 
 import android.os.SystemClock;
 import android.widget.Toast;
@@ -22,6 +22,7 @@ public class BaseRequest extends OkRequest<JSONObject> {
                        Response.ErrorListener errorListener) {
         super(method, url, errorListener);
         setReseponseListener(listener);
+        acceptGzipEncoding();
     }
 
     @Override

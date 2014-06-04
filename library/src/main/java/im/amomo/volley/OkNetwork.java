@@ -1,6 +1,7 @@
 package im.amomo.volley;
 
 import android.os.SystemClock;
+import android.util.Log;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Cache;
 import com.android.volley.Network;
@@ -16,6 +17,11 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ByteArrayPool;
 import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.PoolingByteArrayOutputStream;
+import com.squareup.okhttp.Response;
+import okio.Buffer;
+import okio.GzipSink;
+import okio.GzipSource;
+import okio.Okio;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -36,7 +42,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * Created by GoogolMo on 11/26/13.
  */
-public class OkNetowrk implements Network {
+public class OkNetwork implements Network {
 
     protected static final boolean DEBUG = VolleyLog.DEBUG;
 
@@ -44,14 +50,14 @@ public class OkNetowrk implements Network {
 
     private static final int DEFAULT_POOL_SIZE = 4096;
 
-    protected final HttpStack mHttpStack;
+    protected final OkStack mHttpStack;
 
     protected final ByteArrayPool mPool;
 
     /**
      * @param httpStack HTTP stack to be used
      */
-    public OkNetowrk(HttpStack httpStack) {
+    public OkNetwork(OkStack httpStack) {
         // If a pool isn't passed in, then build a small default pool that will give us a lot of
         // benefit and not use too much memory.
         this(httpStack, new ByteArrayPool(DEFAULT_POOL_SIZE));
@@ -61,7 +67,7 @@ public class OkNetowrk implements Network {
      * @param httpStack HTTP stack to be used
      * @param pool      a buffer pool that improves GC performance in copy operations
      */
-    public OkNetowrk(HttpStack httpStack, ByteArrayPool pool) {
+    public OkNetwork(OkStack httpStack, ByteArrayPool pool) {
         mHttpStack = httpStack;
         mPool = pool;
     }
@@ -70,7 +76,7 @@ public class OkNetowrk implements Network {
     public NetworkResponse performRequest(Request<?> request) throws VolleyError {
         long requestStart = SystemClock.elapsedRealtime();
         while (true) {
-            HttpResponse httpResponse = null;
+            Response httpResponse = null;
             byte[] responseContents = null;
             Map<String, String> responseHeaders = new HashMap<String, String>();
             try {
@@ -78,29 +84,48 @@ public class OkNetowrk implements Network {
                 Map<String, String> headers = new HashMap<String, String>();
                 addCacheHeaders(headers, request.getCacheEntry());
                 httpResponse = mHttpStack.performRequest(request, headers);
-                StatusLine statusLine = httpResponse.getStatusLine();
-                int statusCode = statusLine.getStatusCode();
+                int statusCode = httpResponse.code();
 
-                responseHeaders = convertHeaders(httpResponse.getAllHeaders());
+                for (String field : httpResponse.headers().names()) {
+                    responseHeaders.put(field, httpResponse.headers().get(field));
+                }
+
                 // Handle cache validation.
                 if (statusCode == HttpStatus.SC_NOT_MODIFIED) {
                     return new NetworkResponse(HttpStatus.SC_NOT_MODIFIED,
                             request.getCacheEntry().data, responseHeaders, true);
                 }
 
-                // Some responses such as 204s do not have content.  We must check.
-                if (httpResponse.getEntity() != null) {
-                    responseContents = entityToBytes(httpResponse.getEntity()
-                            , responseGzip(responseHeaders));
+                if (httpResponse.body() != null) {
+
+                    if (responseGzip(responseHeaders)) {
+                        Buffer buffer = new Buffer();
+                        GzipSource gzipSource = new GzipSource(httpResponse.body().source());
+                        while (gzipSource.read(buffer, Integer.MAX_VALUE) != -1) {
+
+                        }
+                        responseContents = buffer.readByteArray();
+                    } else {
+                        responseContents = httpResponse.body().bytes();
+                    }
+
                 } else {
-                    // Add 0 byte response as a way of honestly representing a
-                    // no-content request.
                     responseContents = new byte[0];
                 }
 
+//                // Some responses such as 204s do not have content.  We must check.
+//                if (httpResponse.getEntity() != null) {
+//                    responseContents = entityToBytes(httpResponse.getEntity()
+//                            , responseGzip(responseHeaders));
+//                } else {
+//                    // Add 0 byte response as a way of honestly representing a
+//                    // no-content request.
+//                    responseContents = new byte[0];
+//                }
+
                 // if the request is slow, log it.
                 long requestLifetime = SystemClock.elapsedRealtime() - requestStart;
-                logSlowRequests(requestLifetime, request, responseContents, statusLine);
+                logSlowRequests(requestLifetime, request, responseContents, httpResponse);
 
                 if (statusCode < 200 || statusCode > 299) {
                     throw new IOException();
@@ -116,7 +141,7 @@ public class OkNetowrk implements Network {
                 int statusCode = 0;
                 NetworkResponse networkResponse = null;
                 if (httpResponse != null) {
-                    statusCode = httpResponse.getStatusLine().getStatusCode();
+                    statusCode = httpResponse.code();
                 } else {
                     throw new NoConnectionError(e);
                 }
@@ -153,12 +178,12 @@ public class OkNetowrk implements Network {
      * Logs requests that took over SLOW_REQUEST_THRESHOLD_MS to complete.
      */
     private void logSlowRequests(long requestLifetime, Request<?> request,
-                                 byte[] responseContents, StatusLine statusLine) {
+                                 byte[] responseContents, Response response) {
         if (DEBUG || requestLifetime > SLOW_REQUEST_THRESHOLD_MS) {
             VolleyLog.d("HTTP response for request=<%s> [lifetime=%d], [size=%s], " +
                     "[rc=%d], [retryCount=%s]", request, requestLifetime,
                     responseContents != null ? responseContents.length : "null",
-                    statusLine.getStatusCode(), request.getRetryPolicy().getCurrentRetryCount());
+                    response.code(), request.getRetryPolicy().getCurrentRetryCount());
         }
     }
 

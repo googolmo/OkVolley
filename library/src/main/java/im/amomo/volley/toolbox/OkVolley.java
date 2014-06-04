@@ -11,8 +11,9 @@ import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.Volley;
 import im.amomo.volley.OkHttpStack;
-import im.amomo.volley.OkNetowrk;
+import im.amomo.volley.OkNetwork;
 import im.amomo.volley.OkRequest;
+import im.amomo.volley.OkStack;
 
 import javax.net.ssl.HostnameVerifier;
 import java.io.File;
@@ -110,7 +111,7 @@ public class OkVolley extends Volley {
     public im.amomo.volley.OkImageLoader getImageLoader() {
         if (mImageLoader == null) {
 
-            Network network = new im.amomo.volley.OkNetowrk(getDefaultHttpStack());
+            Network network = new OkNetwork(getDefaultHttpStack());
 
             File cache = mContext.getExternalCacheDir();
             if (cache == null) {
@@ -245,7 +246,7 @@ public class OkVolley extends Volley {
     public static RequestQueue newRequestQueue(Context context) {
 
         if (InstanceNetwork == null) {
-            InstanceNetwork = new OkNetowrk(getDefaultHttpStack());
+            InstanceNetwork = new OkNetwork(getDefaultHttpStack());
         }
 
         if (InstanceCache == null) {
@@ -263,7 +264,7 @@ public class OkVolley extends Volley {
         return queue;
     }
 
-    protected static HttpStack getDefaultHttpStack() {
+    protected static OkStack getDefaultHttpStack() {
         if (okHttpStack == null) {
             okHttpStack = new OkHttpStack();
         }

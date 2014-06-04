@@ -5,7 +5,11 @@ import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.HttpStack;
+import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+import okio.BufferedSink;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -38,12 +42,11 @@ import java.util.Map;
 /**
  * Created by GoogolMo on 10/22/13.
  */
-public class OkHttpStack implements HttpStack {
+public class OkHttpStack implements OkStack {
 
     private final OkHttpClient mClient;
 
     private final UrlRewriter mUrlRewriter;
-    private final SSLSocketFactory mSslSocketFactory;
 
     /**
      * An interface for transforming URLs before use.
@@ -68,11 +71,7 @@ public class OkHttpStack implements HttpStack {
     public OkHttpStack(UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
         this.mClient = new OkHttpClient();
         this.mUrlRewriter = urlRewriter;
-        this.mSslSocketFactory = sslSocketFactory;
-    }
-
-    protected HttpURLConnection createConnection(URL url) throws IOException {
-        return this.mClient.open(url);
+        this.mClient.setSslSocketFactory(sslSocketFactory);
     }
 
     /**
@@ -85,8 +84,8 @@ public class OkHttpStack implements HttpStack {
      * @throws com.android.volley.AuthFailureError
      */
     @Override
-    public HttpResponse performRequest(Request<?> request,
-                                       Map<String, String> additionalHeaders) throws IOException, AuthFailureError {
+    public Response performRequest(Request<?> request,
+                                   Map<String, String> additionalHeaders) throws IOException, AuthFailureError {
 
 
         String url = request.getUrl();
@@ -100,138 +99,80 @@ public class OkHttpStack implements HttpStack {
             }
             url = rewritten;
         }
-        URL parsedUrl = new URL(url);
-        HttpURLConnection connection = openConnection(parsedUrl, request);
+
+        com.squareup.okhttp.Request.Builder builder = new com.squareup.okhttp.Request.Builder();
+        builder.url(url);
+
         for (String headerName : map.keySet()) {
-            connection.addRequestProperty(headerName, map.get(headerName));
+            builder.header(headerName, map.get(headerName));
+//            connection.addRequestProperty(headerName, map.get(headerName));
             if (VolleyLog.DEBUG) {
                 //打印请求的头部信息
                 VolleyLog.d("RequestHeader: %1$s:%2$s", headerName, map.get(headerName));
             }
         }
-        setConnectionParametersForRequest(connection, request);
+        setConnectionParametersForRequest(builder, request);
         // Initialize HttpResponse with data from the HttpURLConnection.
-        ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 1);
-        int responseCode = connection.getResponseCode();
+        Response okhttpResponse = mClient.newCall(builder.build()).execute();
+
+        int responseCode = okhttpResponse.code();
         if (responseCode == -1) {
             // -1 is returned by getResponseCode() if the response code could not be retrieved.
             // Signal to the caller that something was wrong with the connection.
             throw new IOException("Could not retrieve response code from HttpUrlConnection.");
         }
-        StatusLine responseStatus = new BasicStatusLine(protocolVersion,
-                connection.getResponseCode(), connection.getResponseMessage());
-        BasicHttpResponse response = new BasicHttpResponse(responseStatus);
-        response.setEntity(entityFromConnection(connection));
-        for (Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
-            if (header.getKey() != null) {
-                if (VolleyLog.DEBUG) {
-                    VolleyLog.d("HttpResponse.Header[%1$s:%2$s]", header.getKey(), header.getValue().get(0));
-                }
-                Header h = new BasicHeader(header.getKey(), header.getValue().get(0));
-                response.addHeader(h);
-            }
-        }
-        return response;
+        return okhttpResponse;
     }
 
-    /**
-     * Initializes an {@link org.apache.http.HttpEntity} from the given {@link java.net.HttpURLConnection}.
-     *
-     * @param connection
-     * @return an HttpEntity populated with data from <code>connection</code>.
-     */
-    private static HttpEntity entityFromConnection(HttpURLConnection connection) {
-        BasicHttpEntity entity = new BasicHttpEntity();
-        InputStream inputStream;
-        try {
-            inputStream = connection.getInputStream();
-        } catch (IOException ioe) {
-            inputStream = connection.getErrorStream();
-        }
-        entity.setContent(inputStream);
-        entity.setContentLength(connection.getContentLength());
-        entity.setContentEncoding(connection.getContentEncoding());
-        entity.setContentType(connection.getContentType());
-        return entity;
-    }
-
-    /**
-     * Opens an {@link java.net.HttpURLConnection} with parameters.
-     *
-     * @param url
-     * @return an open connection
-     * @throws java.io.IOException
-     */
-    private HttpURLConnection openConnection(URL url, Request<?> request) throws IOException {
-        HttpURLConnection connection = createConnection(url);
-
-        int timeoutMs = request.getTimeoutMs();
-        connection.setConnectTimeout(timeoutMs);
-        connection.setReadTimeout(timeoutMs);
-        connection.setUseCaches(false);
-        connection.setDoInput(true);
-
-        // use caller-provided custom SslSocketFactory, if any, for HTTPS
-        if ("https".equals(url.getProtocol()) && mSslSocketFactory != null) {
-            ((HttpsURLConnection) connection).setSSLSocketFactory(mSslSocketFactory);
-        }
-
-        return connection;
-    }
-
-    @SuppressWarnings("deprecation")
-    /* package */ static void setConnectionParametersForRequest(HttpURLConnection connection,
-                                                                Request<?> request) throws IOException, AuthFailureError {
+    /* package */
+    static void setConnectionParametersForRequest(com.squareup.okhttp.Request.Builder builder,
+                                                  Request<?> request) throws IOException, AuthFailureError {
         switch (request.getMethod()) {
             case Method.DEPRECATED_GET_OR_POST:
                 // This is the deprecated way that needs to be handled for backwards compatibility.
                 // If the request's post body is null, then the assumption is that the request is
                 // GET.  Otherwise, it is assumed that the request is a POST.
-                byte[] postBody = request.getPostBody();
+                byte[] postBody = request.getBody();
                 if (postBody != null) {
                     // Prepare output. There is no need to set Content-Length explicitly,
                     // since this is handled by HttpURLConnection using the size of the prepared
                     // output stream.
-                    connection.setDoOutput(true);
-                    connection.setRequestMethod("POST");
-                    connection.addRequestProperty(OkRequest.HEADER_CONTENT_TYPE,
-                            request.getPostBodyContentType());
+                    builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
                     if (VolleyLog.DEBUG) {
                         VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getPostBodyContentType());
                     }
-                    DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-                    out.write(postBody);
-                    out.close();
+                } else {
+                    builder.get();
                 }
                 break;
             case Method.GET:
                 // Not necessary to set the request method because connection defaults to GET but
                 // being explicit here.
-                connection.setRequestMethod("GET");
+                builder.get();
                 break;
             case Method.DELETE:
-                connection.setRequestMethod("DELETE");
+                builder.delete();
                 break;
             case Method.POST:
-                connection.setRequestMethod("POST");
-                addBodyIfExists(connection, request);
+                builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), request.getBody()));
+                if (VolleyLog.DEBUG) {
+                    VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBody());
+                }
                 break;
             case Method.PUT:
-                connection.setRequestMethod("PUT");
-                addBodyIfExists(connection, request);
+                builder.put(RequestBody.create(MediaType.parse(request.getBodyContentType()), request.getBody()));
+                if (VolleyLog.DEBUG) {
+                    VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBody());
+                }
                 break;
             case Method.HEAD:
-                connection.setRequestMethod("HEAD");
-                break;
-            case Method.OPTIONS:
-                connection.setRequestMethod("OPTIONS");
-                break;
-            case Method.TRACE:
-                connection.setRequestMethod("TRACE");
+                builder.head();
                 break;
             case Method.PATCH:
-                addBodyIfExists(connection, request);
-                connection.setRequestMethod("PATCH");
+                builder.patch(RequestBody.create(MediaType.parse(request.getBodyContentType()), request.getBody()));
+                if (VolleyLog.DEBUG) {
+                    VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBody());
+                }
                 break;
             default:
                 throw new IllegalStateException("Unknown method type.");
@@ -239,22 +180,6 @@ public class OkHttpStack implements HttpStack {
 
 
     }
-
-    private static void addBodyIfExists(HttpURLConnection connection, Request<?> request)
-            throws IOException, AuthFailureError {
-        byte[] body = request.getBody();
-        if (body != null) {
-            connection.setDoOutput(true);
-            connection.addRequestProperty(OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
-            if (VolleyLog.DEBUG) {
-                VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getBodyContentType());
-            }
-            DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-            out.write(body);
-            out.close();
-        }
-    }
-
 
     /**
      * set request trust all certs include untrusts

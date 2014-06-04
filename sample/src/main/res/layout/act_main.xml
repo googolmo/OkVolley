@@ -17,7 +17,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:background="#777"
-            android:name="com.douban.volley.sample.DrawerFragment"
+            android:name="im.amomo.volley.sample.DrawerFragment"
             />
 
 </android.support.v4.widget.DrawerLayout>
