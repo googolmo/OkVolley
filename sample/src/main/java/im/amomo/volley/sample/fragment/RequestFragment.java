@@ -89,7 +89,7 @@ public class RequestFragment extends ListFragment {
 
     private void post() {
 
-        BaseRequest request = new BaseRequest(Request.Method.POST, "http://10.0.2.24:5000/test1",
+        BaseRequest request = new BaseRequest(Request.Method.POST, "http://192.168.2.19:5000/test1",
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject jsonObject) {
@@ -109,7 +109,7 @@ public class RequestFragment extends ListFragment {
                     }
                 }
         );
-        request.form("text", "test " + SystemClock.elapsedRealtime());
+//        request.form("text", "test " + SystemClock.elapsedRealtime());
         request.setTag("request");
         OkVolley.getInstance().getRequestQueue().add(request);
     }
@@ -119,7 +119,7 @@ public class RequestFragment extends ListFragment {
         AssetManager assetManager = getActivity().getAssets();
         InputStream in = assetManager.open("26391.jpg");
 
-        BaseRequest request = new BaseRequest(Request.Method.POST, "http://10.0.2.24:5000/",
+        BaseRequest request = new BaseRequest(Request.Method.POST, "http://192.168.2.19:5000/postimage",
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject jsonObject) {
