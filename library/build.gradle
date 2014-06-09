@@ -3,7 +3,7 @@ apply plugin: 'android-library'
 dependencies {
     compile 'com.squareup.okhttp:okhttp:2.+'
 //    compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0-RC1'
-    compile files('libs/volley.jar')
+//    compile files('libs/volley.jar')
 }
 
 version = project.VERSION_NAME
@@ -16,7 +16,7 @@ android {
     defaultConfig {
         minSdkVersion Integer.parseInt(project.MIN_SDK_VERSION)
         targetSdkVersion Integer.parseInt(project.TARGET_SDK_VERSION)
-        packageName project.GROUP
+        applicationId project.GROUP
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
     }
