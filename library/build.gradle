@@ -25,7 +25,7 @@ android {
         // if true, stop the gradle build if errors are found
         abortOnError true
         // turn off checking the given issue id's
-        disable 'TypographyFractions', 'TypographyQuotes'
+        disable 'TypographyFractions', 'TypographyQuotes', 'InvalidPackage'
         // if true, don't include source code lines in the error output
         noLines true
         // if true, generate an XML report for use by for example Jenkins
