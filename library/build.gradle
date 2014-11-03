@@ -23,7 +23,7 @@ android {
 
     lintOptions {
         // if true, stop the gradle build if errors are found
-        abortOnError false
+        abortOnError true
         // turn off checking the given issue id's
         disable 'TypographyFractions', 'TypographyQuotes'
         // if true, don't include source code lines in the error output
