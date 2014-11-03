@@ -1,6 +1,18 @@
 language: android
+env:
+  matrix:
+    - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
 android:
   components:
     - build-tools-21.1.0
     - android-21
     - extra-android-m2repository
+    - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
+
+before_script:
+  - echo no | android create avd --force -n test -t ${ANDROID_TARGET} --abi ${ANDROID_ABI}
+  - emulator -avd test -no-skin -no-audio -no-window &
+  - android-wait-for-emulator
+
+script:
+  ./gradlew build connectedAndroidTest
