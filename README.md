@@ -5,6 +5,8 @@ A volley library used okhttp
 
 [![Build Status](https://drone.io/github.com/googolmo/OkVolley/status.png)](https://drone.io/github.com/googolmo/OkVolley/latest)
 
+[![Build Status](https://travis-ci.org/googolmo/OkVolley.svg?branch=master)](https://travis-ci.org/googolmo/OkVolley)
+
 ```groovy
 compile 'im.amomo.volley:okvolley:1.0.9@aar'
 ```
