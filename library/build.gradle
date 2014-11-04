@@ -1,9 +1,12 @@
 apply plugin: 'com.android.library'
 
 dependencies {
-    compile 'com.squareup.okhttp:okhttp:2.+'
-//    compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0-RC1'
-//    compile files('libs/volley.jar')
+    compile('com.squareup.okhttp:okhttp:2.+') {
+        exclude group: 'com.squareup.okio', module: 'okio'
+    }
+    compile 'com.squareup.okio:okio:1.0.1'
+
+    compile project(':third_party:volley')
 }
 
 version = project.VERSION_NAME

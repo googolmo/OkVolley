@@ -1,6 +1,7 @@
 package im.amomo.volley;
 
 import android.os.SystemClock;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Cache;
 import com.android.volley.Network;
@@ -15,8 +16,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ByteArrayPool;
 import com.squareup.okhttp.Response;
-import okio.Buffer;
-import okio.GzipSource;
+
 import org.apache.http.HttpStatus;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.cookie.DateUtils;
@@ -24,9 +24,14 @@ import org.apache.http.impl.cookie.DateUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
+
+import okio.Buffer;
+import okio.GzipSource;
 
 /**
  * Created by GoogolMo on 11/26/13.
@@ -67,7 +72,7 @@ public class OkNetwork implements Network {
         while (true) {
             Response httpResponse = null;
             byte[] responseContents = null;
-            Map<String, String> responseHeaders = new HashMap<String, String>();
+            Map<String, String> responseHeaders = Collections.emptyMap();
             try {
                 // Gather headers.
                 Map<String, String> headers = new HashMap<String, String>();
@@ -75,8 +80,10 @@ public class OkNetwork implements Network {
                 httpResponse = mHttpStack.performRequest(request, headers);
                 int statusCode = httpResponse.code();
 
-                for (String field : httpResponse.headers().names()) {
-                    responseHeaders.put(field, httpResponse.headers().get(field));
+                for (String field : httpResponse.headers()
+                        .names()) {
+                    responseHeaders.put(field, httpResponse.headers()
+                            .get(field));
                 }
 
                 // Handle cache validation.
@@ -89,13 +96,15 @@ public class OkNetwork implements Network {
 
                     if (responseGzip(responseHeaders)) {
                         Buffer buffer = new Buffer();
-                        GzipSource gzipSource = new GzipSource(httpResponse.body().source());
+                        GzipSource gzipSource = new GzipSource(httpResponse.body()
+                                .source());
                         while (gzipSource.read(buffer, Integer.MAX_VALUE) != -1) {
 
                         }
                         responseContents = buffer.readByteArray();
                     } else {
-                        responseContents = httpResponse.body().bytes();
+                        responseContents = httpResponse.body()
+                                .bytes();
                     }
 
                 } else {
@@ -127,7 +136,7 @@ public class OkNetwork implements Network {
             } catch (MalformedURLException e) {
                 throw new RuntimeException("Bad URL " + request.getUrl(), e);
             } catch (IOException e) {
-                int statusCode = 0;
+                int statusCode;
                 NetworkResponse networkResponse = null;
                 if (httpResponse != null) {
                     statusCode = httpResponse.code();
@@ -156,8 +165,12 @@ public class OkNetwork implements Network {
 
     private static boolean responseGzip(Map<String, String> headers) {
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-            if (entry.getKey().toLowerCase().equals(im.amomo.volley.OkRequest.HEADER_CONTENT_ENCODING.toLowerCase())
-                    && entry.getValue().toLowerCase().equals(im.amomo.volley.OkRequest.ENCODING_GZIP.toLowerCase())) {
+            if (entry.getKey()
+                    .toLowerCase()
+                    .equals(im.amomo.volley.OkRequest.HEADER_CONTENT_ENCODING.toLowerCase())
+                    && entry.getValue()
+                    .toLowerCase()
+                    .equals(im.amomo.volley.OkRequest.ENCODING_GZIP.toLowerCase())) {
                 return true;
             }
         }
@@ -173,7 +186,8 @@ public class OkNetwork implements Network {
             VolleyLog.d("HTTP response for request=<%s> [lifetime=%d], [size=%s], " +
                             "[rc=%d], [retryCount=%s]", request, requestLifetime,
                     responseContents != null ? responseContents.length : "null",
-                    response.code(), request.getRetryPolicy().getCurrentRetryCount()
+                    response.code(), request.getRetryPolicy()
+                            .getCurrentRetryCount()
             );
         }
     }
