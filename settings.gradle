@@ -1,1 +1,1 @@
-include ':library', ':sample', ':third_party:volley'
+include ':library', ':sample'

@@ -5,8 +5,7 @@ dependencies {
         exclude group: 'com.squareup.okio', module: 'okio'
     }
     compile 'com.squareup.okio:okio:1.0.1'
-
-    compile project(':third_party:volley')
+    compile 'com.mcxiaoke.volley:library:1.0.+'
 }
 
 version = project.VERSION_NAME
