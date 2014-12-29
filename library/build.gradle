@@ -1,11 +1,11 @@
 apply plugin: 'com.android.library'
 
 dependencies {
-    compile('com.squareup.okhttp:okhttp:2.+') {
+    compile('com.squareup.okhttp:okhttp:2.1.0') {
         exclude group: 'com.squareup.okio', module: 'okio'
     }
     compile 'com.squareup.okio:okio:1.1.0'
-    compile 'com.mcxiaoke.volley:library:1.0.+'
+    compile 'com.mcxiaoke.volley:library:1.0.9'
 }
 
 version = project.VERSION_NAME
