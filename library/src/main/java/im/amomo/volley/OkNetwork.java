@@ -80,6 +80,8 @@ public class OkNetwork implements Network {
                 httpResponse = mHttpStack.performRequest(request, headers);
                 int statusCode = httpResponse.code();
 
+                responseHeaders = new TreeMap<String, String>();
+
                 for (String field : httpResponse.headers()
                         .names()) {
                     responseHeaders.put(field, httpResponse.headers()

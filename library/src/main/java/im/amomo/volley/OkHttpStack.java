@@ -90,12 +90,12 @@ public class OkHttpStack implements OkStack {
             builder.header(headerName, map.get(headerName));
 //            connection.addRequestProperty(headerName, map.get(headerName));
             if (VolleyLog.DEBUG) {
-                //打印请求的头部信息
+                // print header message
                 VolleyLog.d("RequestHeader: %1$s:%2$s", headerName, map.get(headerName));
             }
         }
         setConnectionParametersForRequest(builder, request);
-        // Initialize HttpResponse with data from the HttpURLConnection.
+        // Initialize HttpResponse with data from the okhttp.
         Response okhttpResponse = mClient.newCall(builder.build()).execute();
 
         int responseCode = okhttpResponse.code();
