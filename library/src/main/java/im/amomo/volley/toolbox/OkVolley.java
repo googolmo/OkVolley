@@ -27,9 +27,7 @@ public class OkVolley extends Volley {
     private static RequestQueue InstanceRequestQueue;
     private static Cache InstanceCache;
     private static Network InstanceNetwork;
-    private static OkHttpStack okHttpStack;
-
-    public static final int DEFAULT_BITMAP_CACHE_PERCENT = 30;
+    private static OkHttpStack OkHttpStack;
 
     private static final String VERSION = "OkVolley/1.0";
 
@@ -44,8 +42,6 @@ public class OkVolley extends Volley {
     private Map<String, String> mRequestHeaders;
 
     private Context mContext;
-
-    private int mBitmapCachePercent = DEFAULT_BITMAP_CACHE_PERCENT;
 
     public static OkVolley getInstance() {
         if (Instance == null) {
@@ -85,54 +81,7 @@ public class OkVolley extends Volley {
     }
 
     /**
-     * set imageload bitmap cache percent
-     *
-     * @param percent <100 >0
-     * @return this Volley Object
-     */
-    public OkVolley setBitmapCachePercent(int percent) {
-        if (percent > 80) {
-            percent = 80;
-        } else if (percent < 20) {
-            percent = 20;
-        }
-        this.mBitmapCachePercent = percent;
-        return this;
-    }
-
-    private im.amomo.volley.OkImageLoader mImageLoader;
-
-    /**
-     * get the imageloader
-     *
-     * @return imageloader
-     */
-    public im.amomo.volley.OkImageLoader getImageLoader() {
-        if (mImageLoader == null) {
-
-            Network network = new OkNetwork(getDefaultHttpStack());
-
-            File cache = mContext.getExternalCacheDir();
-            if (cache == null) {
-                cache = mContext.getCacheDir();
-            }
-            File cacheDir = new File(cache, DEFAULT_CACHE_DIR);
-            Cache diskBasedCache = new DiskBasedCache(cacheDir);
-
-            RequestQueue imageQueue = new RequestQueue(diskBasedCache, network);
-
-            im.amomo.volley.BitmapLruCache bitmapLruCache = new im.amomo.volley.BitmapLruCache(im.amomo.volley.BitmapLruCache
-                    .getMemorySize(mBitmapCachePercent));
-            mImageLoader = new im.amomo.volley.OkImageLoader(imageQueue, bitmapLruCache);
-            mImageLoader.setBatchedResponseDelay(0);
-
-            imageQueue.start();
-        }
-        return mImageLoader;
-    }
-
-    /**
-     * 生成User-Agent
+     * build the default User-Agent
      *
      * @param context
      * @return
@@ -193,7 +142,7 @@ public class OkVolley extends Volley {
      * @return this Volley Object
      */
     public OkVolley setHostnameTrustedVerifier(HostnameVerifier verifier) {
-        okHttpStack.setHostnameVerifier(verifier);
+        OkHttpStack.setHostnameVerifier(verifier);
         return this;
     }
 
@@ -203,7 +152,7 @@ public class OkVolley extends Volley {
      * @return this Volley Object
      */
     public OkVolley trustAllCerts() {
-        okHttpStack.trustAllCerts();
+        OkHttpStack.trustAllCerts();
         return this;
     }
 
@@ -264,9 +213,9 @@ public class OkVolley extends Volley {
     }
 
     protected static OkStack getDefaultHttpStack() {
-        if (okHttpStack == null) {
-            okHttpStack = new OkHttpStack();
+        if (OkHttpStack == null) {
+            OkHttpStack = new OkHttpStack();
         }
-        return okHttpStack;
+        return OkHttpStack;
     }
 }

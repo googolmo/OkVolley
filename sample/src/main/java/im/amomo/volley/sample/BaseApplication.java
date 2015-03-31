@@ -15,8 +15,7 @@ public class BaseApplication extends Application {
 
         OkVolley.getInstance().init(this)
                 .setUserAgent(OkVolley.generateUserAgent(this))
-                .trustAllCerts()
-                .setBitmapCachePercent(30);
+                .trustAllCerts();
 
         VolleyLog.DEBUG = BuildConfig.DEBUG;
 
