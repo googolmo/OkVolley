@@ -89,8 +89,8 @@ public class OkNetwork implements Network {
                 }
 
                 // Handle cache validation.
-                if (statusCode == HttpStatus.SC_NOT_MODIFIED) {
-                    return new NetworkResponse(HttpStatus.SC_NOT_MODIFIED,
+                if (statusCode == 304) {
+                    return new NetworkResponse(304,
                             request.getCacheEntry().data, responseHeaders, true);
                 }
 
@@ -150,8 +150,8 @@ public class OkNetwork implements Network {
                 if (responseContents != null) {
                     networkResponse = new NetworkResponse(statusCode, responseContents,
                             responseHeaders, false);
-                    if (statusCode == HttpStatus.SC_UNAUTHORIZED ||
-                            statusCode == HttpStatus.SC_FORBIDDEN) {
+                    if (statusCode == 401 ||
+                            statusCode == 403) {
                         attemptRetryOnException("auth",
                                 request, new AuthFailureError(networkResponse));
                     } else {
