@@ -17,7 +17,6 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ByteArrayPool;
 import com.squareup.okhttp.Response;
 
-import org.apache.http.HttpStatus;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.cookie.DateUtils;
 

@@ -530,7 +530,9 @@ public abstract class OkRequest<T> extends Request<T> {
             mOutput.write('&');
         }
         try {
-            VolleyLog.v("name=%1$s, value=%2$s", name, value);
+            if (VolleyLog.DEBUG) {
+                VolleyLog.d("name=%1$s, value=%2$s", name, value);
+            }
             mOutput.write(URLEncoder.encode(name, charset));
             mOutput.write("=");
             if (value != null) {
