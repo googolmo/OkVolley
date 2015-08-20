@@ -5,7 +5,7 @@ env:
 android:
   components:
     - build-tools-23.0.0
-    - android-22
+    - android-23
     - extra-android-m2repository
     - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
 
