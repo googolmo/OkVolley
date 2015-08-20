@@ -841,7 +841,7 @@ public abstract class OkRequest<T> extends Request<T> {
     @Override
     public byte[] getBody() throws AuthFailureError {
         if (mOutput == null) {
-            return super.getBody();
+            openOutput();
         }
         try {
             if (mMultipart) {

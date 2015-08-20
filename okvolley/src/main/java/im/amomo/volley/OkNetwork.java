@@ -1,6 +1,7 @@
 package im.amomo.volley;
 
 import android.os.SystemClock;
+import android.text.format.DateUtils;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Cache;
@@ -18,15 +19,18 @@ import com.android.volley.toolbox.ByteArrayPool;
 import com.squareup.okhttp.Response;
 
 import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.impl.cookie.DateUtils;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import okio.Buffer;
@@ -44,6 +48,8 @@ public class OkNetwork implements Network {
     private static final int DEFAULT_POOL_SIZE = 4096;
 
     protected final OkStack mHttpStack;
+
+    public static final String PATTERN_RFC1036 = "EEE, dd-MMM-yy HH:mm:ss zzz";
 
     protected final ByteArrayPool mPool;
 
@@ -226,13 +232,70 @@ public class OkNetwork implements Network {
 
         if (entry.serverDate > 0) {
             Date refTime = new Date(entry.serverDate);
-            headers.put("If-Modified-Since", DateUtils.formatDate(refTime));
+            final SimpleDateFormat formatter = DateFormatHolder.formatFor(PATTERN_RFC1036);
+            headers.put("If-Modified-Since", formatter.format(refTime));
         }
     }
 
     protected void logError(String what, String url, long start) {
         long now = SystemClock.elapsedRealtime();
         VolleyLog.v("HTTP ERROR(%s) %d ms to fetch %s", what, (now - start), url);
+    }
+
+    /**
+     * A factory for {@link SimpleDateFormat}s. The instances are stored in a
+     * threadlocal way because SimpleDateFormat is not threadsafe as noted in
+     * {@link SimpleDateFormat its javadoc}.
+     *
+     */
+    final static class DateFormatHolder {
+
+        private static final ThreadLocal<SoftReference<Map<String, SimpleDateFormat>>>
+                THREADLOCAL_FORMATS = new ThreadLocal<SoftReference<Map<String, SimpleDateFormat>>>() {
+
+            @Override
+            protected SoftReference<Map<String, SimpleDateFormat>> initialValue() {
+                return new SoftReference<Map<String, SimpleDateFormat>>(
+                        new HashMap<String, SimpleDateFormat>());
+            }
+
+        };
+
+        /**
+         * creates a {@link SimpleDateFormat} for the requested format string.
+         *
+         * @param pattern
+         *            a non-{@code null} format String according to
+         *            {@link SimpleDateFormat}. The format is not checked against
+         *            {@code null} since all paths go through
+         *            {@link DateUtils}.
+         * @return the requested format. This simple dateformat should not be used
+         *         to {@link SimpleDateFormat#applyPattern(String) apply} to a
+         *         different pattern.
+         */
+        public static SimpleDateFormat formatFor(final String pattern) {
+            final SoftReference<Map<String, SimpleDateFormat>> ref = THREADLOCAL_FORMATS.get();
+            Map<String, SimpleDateFormat> formats = ref.get();
+            if (formats == null) {
+                formats = new HashMap<>();
+                THREADLOCAL_FORMATS.set(
+                        new SoftReference<>(formats));
+            }
+
+            SimpleDateFormat format = formats.get(pattern);
+            if (format == null) {
+                format = new SimpleDateFormat(pattern, Locale.US);
+                format.setTimeZone(TimeZone.getTimeZone("GMT"));
+                formats.put(pattern, format);
+            }
+
+            return format;
+        }
+
+        public static void clearThreadLocal() {
+            THREADLOCAL_FORMATS.remove();
+        }
+
     }
 
 }
