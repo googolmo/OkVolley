@@ -10,7 +10,7 @@ A volley library used okhttp
 [ ![Download](https://api.bintray.com/packages/googolmo/maven/okvolley/images/download.svg) ](https://bintray.com/googolmo/maven/okvolley/_latestVersion)
 
 ```groovy
-compile 'im.amomo.volley:okvolley:1.1.4@aar'
+compile 'im.amomo.volley:okvolley:1.1.5@aar'
 ```
 
 ###Pay Attention###
