@@ -9,10 +9,16 @@ A volley library used okhttp
 
 [ ![Download](https://api.bintray.com/packages/googolmo/maven/okvolley/images/download.svg) ](https://bintray.com/googolmo/maven/okvolley/_latestVersion)
 
+### How to use
+
 ```groovy
 compile 'im.amomo.volley:okvolley:1.1.5@aar'
 ```
 
-###Pay Attention###
-if you use OkVolley which version >= 1.0.6, you should also use [picasso](http://square.github.io/picasso/) version >= 2.3.0
-now you can use [glide](https://github.com/bumptech/glide) as your imageloader
+### Proguard
+
+```
+-dontwarn im.amomo.volley.**
+-dontwarn com.android.volley.**
+```
+
