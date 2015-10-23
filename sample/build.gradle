@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:22.+'
-    compile 'com.android.support:support-v4:22.+'
+    compile 'com.android.support:appcompat-v7:23.+'
+    compile 'com.android.support:support-v4:23.+'
     compile project (':okvolley')
 }
 
