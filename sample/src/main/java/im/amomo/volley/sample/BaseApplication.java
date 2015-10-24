@@ -18,8 +18,5 @@ public class BaseApplication extends Application {
                 .trustAllCerts();
 
         VolleyLog.DEBUG = BuildConfig.DEBUG;
-
     }
-
-
 }

@@ -1,18 +1,20 @@
-package im.amomo.volley.sample;
+package im.amomo.volley.sample.okvolleyrequest;
 
 import android.os.SystemClock;
-import android.widget.Toast;
+
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.HttpHeaderParser;
-import im.amomo.volley.OkRequest;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+
+import im.amomo.volley.OkRequest;
 
 public class BaseRequest extends OkRequest<JSONObject> {
 
