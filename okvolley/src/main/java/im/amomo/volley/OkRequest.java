@@ -962,7 +962,7 @@ public abstract class OkRequest<T> extends Request<T> {
 
     @Override
     public String getCacheKey() {
-        return super.getCacheKey();
+        return this.getMethod() + ":" +this.getUrl();
     }
 
     @Override
