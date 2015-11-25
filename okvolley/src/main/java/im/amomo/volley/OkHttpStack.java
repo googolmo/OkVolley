@@ -4,10 +4,18 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.VolleyLog;
+import com.squareup.okhttp.Dispatcher;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -15,12 +23,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by GoogolMo on 10/22/13.
@@ -55,6 +57,17 @@ public class OkHttpStack implements OkStack {
         this.mClient = new OkHttpClient();
         this.mUrlRewriter = urlRewriter;
         this.mClient.setSslSocketFactory(sslSocketFactory);
+    }
+
+    /**
+     * set dispatcher to OkHttpClient
+     * @param dispatcher {@link OkHttpClient}.setDispatcher({@link Dispatcher})
+     */
+    public void setDispatcher(Dispatcher dispatcher) {
+        if (dispatcher == null) {
+            return;
+        }
+        this.mClient.setDispatcher(dispatcher);
     }
 
     /**

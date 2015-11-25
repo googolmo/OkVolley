@@ -4,20 +4,23 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+
 import com.android.volley.Cache;
 import com.android.volley.Network;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.Volley;
-import im.amomo.volley.OkHttpStack;
-import im.amomo.volley.OkNetwork;
-import im.amomo.volley.OkRequest;
-import im.amomo.volley.OkStack;
+import com.squareup.okhttp.Dispatcher;
 
-import javax.net.ssl.HostnameVerifier;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+
+import im.amomo.volley.OkHttpStack;
+import im.amomo.volley.OkNetwork;
+import im.amomo.volley.OkRequest;
 
 /**
  * Created by GoogolMo on 10/22/13.
@@ -36,7 +39,7 @@ public class OkVolley extends Volley {
      */
     private static final String DEFAULT_CACHE_DIR = "volley";
 
-    private static OkVolley Instance;
+    private static OkVolley sInstance;
     private String mUserAgent;
 
     private Map<String, String> mRequestHeaders;
@@ -44,26 +47,26 @@ public class OkVolley extends Volley {
     private Context mContext;
 
     public static OkVolley getInstance() {
-        if (Instance == null) {
-            Instance = new OkVolley();
+        if (sInstance == null) {
+            sInstance = new OkVolley();
         }
-        return Instance;
+        return sInstance;
     }
 
     public OkVolley() {
     }
 
     /**
-     * init method
+     * init method please call this method in Application
      *
-     * @param context Context
+     * @param context ApplicationContext
      * @return this Volley Object
      */
     public OkVolley init(Context context) {
         this.mContext = context;
         InstanceRequestQueue = newRequestQueue(context);
         mUserAgent = generateUserAgent(context);
-        mRequestHeaders = new HashMap<String, String>();
+        mRequestHeaders = new HashMap<>();
         mRequestHeaders.put(OkRequest.HEADER_USER_AGENT, mUserAgent);
         mRequestHeaders.put(OkRequest.HEADER_ACCEPT_CHARSET, OkRequest.CHARSET_UTF8);
         return this;
@@ -212,10 +215,17 @@ public class OkVolley extends Volley {
         return queue;
     }
 
-    protected static OkStack getDefaultHttpStack() {
+    protected static OkHttpStack getDefaultHttpStack() {
         if (OkHttpStack == null) {
             OkHttpStack = new OkHttpStack();
         }
         return OkHttpStack;
+    }
+
+    public void setDispatcher(Dispatcher dispatcher) {
+        if (dispatcher == null) {
+            return;
+        }
+        getDefaultHttpStack().setDispatcher(dispatcher);
     }
 }

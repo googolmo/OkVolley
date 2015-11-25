@@ -5,7 +5,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
 dependencies {
-    compile('com.squareup.okhttp:okhttp:2.5.0') {
+    compile('com.squareup.okhttp:okhttp:2.6.0') {
         exclude group: 'com.squareup.okio', module: 'okio'
     }
     compile 'com.squareup.okio:okio:1.6.0'
