@@ -5,6 +5,7 @@ import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.VolleyLog;
 import com.squareup.okhttp.Dispatcher;
+import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.RequestBody;
@@ -68,6 +69,34 @@ public class OkHttpStack implements OkStack {
             return;
         }
         this.mClient.setDispatcher(dispatcher);
+    }
+
+    public void addInterceptor(Interceptor interceptor) {
+        if (interceptor == null) {
+            return;
+        }
+        this.mClient.interceptors().add(interceptor);
+    }
+
+    public void addNetworkInterceptor(Interceptor interceptor) {
+        if (interceptor == null) {
+            return;
+        }
+        this.mClient.networkInterceptors().add(interceptor);
+    }
+
+    public void removeInterceptor(Interceptor interceptor) {
+        if (interceptor == null) {
+            return;
+        }
+        this.mClient.interceptors().remove(interceptor);
+    }
+
+    public void removeNetworkInterceptor(Interceptor interceptor) {
+        if (interceptor == null) {
+            return;
+        }
+        this.mClient.networkInterceptors().remove(interceptor);
     }
 
     /**
