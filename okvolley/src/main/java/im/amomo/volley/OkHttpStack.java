@@ -4,10 +4,18 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.VolleyLog;
+import com.squareup.okhttp.Dispatcher;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -15,12 +23,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by GoogolMo on 10/22/13.
@@ -55,6 +57,17 @@ public class OkHttpStack implements OkStack {
         this.mClient = new OkHttpClient();
         this.mUrlRewriter = urlRewriter;
         this.mClient.setSslSocketFactory(sslSocketFactory);
+    }
+
+    /**
+     * set dispatcher to OkHttpClient
+     * @param dispatcher {@link OkHttpClient}.setDispatcher({@link Dispatcher})
+     */
+    public void setDispatcher(Dispatcher dispatcher) {
+        if (dispatcher == null) {
+            return;
+        }
+        this.mClient.setDispatcher(dispatcher);
     }
 
     /**
@@ -96,15 +109,15 @@ public class OkHttpStack implements OkStack {
         }
         setConnectionParametersForRequest(builder, request);
         // Initialize HttpResponse with data from the okhttp.
-        Response okhttpResponse = mClient.newCall(builder.build()).execute();
+        Response okHttpResponse = mClient.newCall(builder.build()).execute();
 
-        int responseCode = okhttpResponse.code();
+        int responseCode = okHttpResponse.code();
         if (responseCode == -1) {
             // -1 is returned by getResponseCode() if the response code could not be retrieved.
             // Signal to the caller that something was wrong with the connection.
             throw new IOException("Could not retrieve response code from HttpUrlConnection.");
         }
-        return okhttpResponse;
+        return okHttpResponse;
     }
 
     /* package */
@@ -144,7 +157,7 @@ public class OkHttpStack implements OkStack {
             case Method.POST:
                 postBody = request.getBody();
                 if (postBody == null) {
-                    builder.post(null);
+                    builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), ""));
                 } else {
                     builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
                 }
@@ -155,7 +168,7 @@ public class OkHttpStack implements OkStack {
             case Method.PUT:
                 postBody = request.getBody();
                 if (postBody == null) {
-                    builder.put(null);
+                    builder.put(RequestBody.create(MediaType.parse(request.getBodyContentType()), ""));
                 } else {
                     builder.put(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
                 }
@@ -169,7 +182,7 @@ public class OkHttpStack implements OkStack {
             case Method.PATCH:
                 postBody = request.getBody();
                 if (postBody == null) {
-                    builder.patch(null);
+                    builder.patch(RequestBody.create(MediaType.parse(request.getBodyContentType()), ""));
                 } else {
                     builder.patch(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
                 }
