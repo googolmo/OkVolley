@@ -12,7 +12,7 @@ A volley library used okhttp
 ### How to use
 
 ```groovy
-compile 'im.amomo.volley:okvolley:1.1.7@aar'
+compile 'im.amomo.volley:okvolley:1.1.9@aar'
 ```
 
 ### Proguard

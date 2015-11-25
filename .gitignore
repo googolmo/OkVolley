@@ -31,4 +31,5 @@ proguard/
 # gradle
 build/
 .gradle/
+.gradletasknamecache
 
