@@ -11,6 +11,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.Volley;
 import com.squareup.okhttp.Dispatcher;
+import com.squareup.okhttp.Interceptor;
 
 import java.io.File;
 import java.util.HashMap;
@@ -227,5 +228,49 @@ public class OkVolley extends Volley {
             return;
         }
         getDefaultHttpStack().setDispatcher(dispatcher);
+    }
+
+    /**
+     * add OkHttp interceptor
+     * @param interceptor {@link Interceptor}
+     */
+    public void addInterceptor(Interceptor interceptor) {
+        if (interceptor == null) {
+            return;
+        }
+        getDefaultHttpStack().addInterceptor(interceptor);
+    }
+
+    /**
+     * add OkHttp networkInterceptor
+     * @param interceptor {@link Interceptor}
+     */
+    public void addNetworkInterceptor(Interceptor interceptor) {
+        if (interceptor == null) {
+            return;
+        }
+        getDefaultHttpStack().addNetworkInterceptor(interceptor);
+    }
+
+    /**
+     * remove OkHttp interceptor
+     * @param interceptor {@link Interceptor}
+     */
+    public void removeInterceptor(Interceptor interceptor) {
+        if (interceptor == null) {
+            return;
+        }
+        getDefaultHttpStack().removeInterceptor(interceptor);
+    }
+
+    /**
+     * remove OkHttp networkInterceptor
+     * @param interceptor {@link Interceptor}
+     */
+    public void removeNetworkInterceptor(Interceptor interceptor) {
+        if (interceptor == null) {
+            return;
+        }
+        getDefaultHttpStack().removeNetworkInterceptor(interceptor);
     }
 }
