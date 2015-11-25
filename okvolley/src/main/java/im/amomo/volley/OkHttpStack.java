@@ -109,15 +109,15 @@ public class OkHttpStack implements OkStack {
         }
         setConnectionParametersForRequest(builder, request);
         // Initialize HttpResponse with data from the okhttp.
-        Response okhttpResponse = mClient.newCall(builder.build()).execute();
+        Response okHttpResponse = mClient.newCall(builder.build()).execute();
 
-        int responseCode = okhttpResponse.code();
+        int responseCode = okHttpResponse.code();
         if (responseCode == -1) {
             // -1 is returned by getResponseCode() if the response code could not be retrieved.
             // Signal to the caller that something was wrong with the connection.
             throw new IOException("Could not retrieve response code from HttpUrlConnection.");
         }
-        return okhttpResponse;
+        return okHttpResponse;
     }
 
     /* package */
@@ -157,7 +157,7 @@ public class OkHttpStack implements OkStack {
             case Method.POST:
                 postBody = request.getBody();
                 if (postBody == null) {
-                    builder.post(null);
+                    builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), ""));
                 } else {
                     builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
                 }
@@ -168,7 +168,7 @@ public class OkHttpStack implements OkStack {
             case Method.PUT:
                 postBody = request.getBody();
                 if (postBody == null) {
-                    builder.put(null);
+                    builder.put(RequestBody.create(MediaType.parse(request.getBodyContentType()), ""));
                 } else {
                     builder.put(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
                 }
@@ -182,7 +182,7 @@ public class OkHttpStack implements OkStack {
             case Method.PATCH:
                 postBody = request.getBody();
                 if (postBody == null) {
-                    builder.patch(null);
+                    builder.patch(RequestBody.create(MediaType.parse(request.getBodyContentType()), ""));
                 } else {
                     builder.patch(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
                 }
