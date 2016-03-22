@@ -16,7 +16,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ByteArrayPool;
-import com.squareup.okhttp.Response;
+import okhttp3.Response;
 
 import org.apache.http.conn.ConnectTimeoutException;
 

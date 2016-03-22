@@ -2,7 +2,7 @@ package im.amomo.volley;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
-import com.squareup.okhttp.Response;
+import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.Map;

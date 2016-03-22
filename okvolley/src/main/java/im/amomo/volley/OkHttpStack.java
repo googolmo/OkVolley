@@ -4,12 +4,14 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.VolleyLog;
-import com.squareup.okhttp.Dispatcher;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
+import okhttp3.Authenticator;
+import okhttp3.Dispatcher;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.Cache;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -30,7 +32,7 @@ import javax.net.ssl.X509TrustManager;
  */
 public class OkHttpStack implements OkStack {
 
-    private final OkHttpClient mClient;
+    private OkHttpClient mClient;
 
     private final UrlRewriter mUrlRewriter;
 
@@ -55,9 +57,12 @@ public class OkHttpStack implements OkStack {
     }
 
     public OkHttpStack(UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
-        this.mClient = new OkHttpClient();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        if ( null != sslSocketFactory) {
+            builder = builder.sslSocketFactory(sslSocketFactory);
+        }
+        this.mClient = builder.build();
         this.mUrlRewriter = urlRewriter;
-        this.mClient.setSslSocketFactory(sslSocketFactory);
     }
 
     /**
@@ -68,36 +73,42 @@ public class OkHttpStack implements OkStack {
         if (dispatcher == null) {
             return;
         }
-        this.mClient.setDispatcher(dispatcher);
+        this.mClient = mClient.newBuilder().
+            dispatcher(dispatcher).
+            build();
     }
 
     public void addInterceptor(Interceptor interceptor) {
         if (interceptor == null) {
             return;
         }
-        this.mClient.interceptors().add(interceptor);
+        this.mClient = this.mClient.newBuilder().
+            addInterceptor(interceptor).
+            build();
     }
 
     public void addNetworkInterceptor(Interceptor interceptor) {
         if (interceptor == null) {
             return;
         }
-        this.mClient.networkInterceptors().add(interceptor);
+        this.mClient = this.mClient.newBuilder().
+            addNetworkInterceptor(interceptor).
+            build();
     }
 
-    public void removeInterceptor(Interceptor interceptor) {
-        if (interceptor == null) {
-            return;
-        }
-        this.mClient.interceptors().remove(interceptor);
-    }
+    // public void removeInterceptor(Interceptor interceptor) {
+    //     if (interceptor == null) {
+    //         return;
+    //     }
+    //     this.mClient.interceptors().remove(interceptor);
+    // }
 
-    public void removeNetworkInterceptor(Interceptor interceptor) {
-        if (interceptor == null) {
-            return;
-        }
-        this.mClient.networkInterceptors().remove(interceptor);
-    }
+    // public void removeNetworkInterceptor(Interceptor interceptor) {
+    //     if (interceptor == null) {
+    //         return;
+    //     }
+    //     this.mClient.networkInterceptors().remove(interceptor);
+    // }
 
     /**
      * perform the request
@@ -125,7 +136,7 @@ public class OkHttpStack implements OkStack {
             url = rewritten;
         }
 
-        com.squareup.okhttp.Request.Builder builder = new com.squareup.okhttp.Request.Builder();
+        okhttp3.Request.Builder builder = new okhttp3.Request.Builder();
         builder.url(url);
 
         for (String headerName : map.keySet()) {
@@ -150,7 +161,7 @@ public class OkHttpStack implements OkStack {
     }
 
     /* package */
-    static void setConnectionParametersForRequest(com.squareup.okhttp.Request.Builder builder,
+    static void setConnectionParametersForRequest(okhttp3.Request.Builder builder,
                                                   Request<?> request) throws IOException, AuthFailureError {
 
         byte[] postBody = null;
@@ -232,7 +243,9 @@ public class OkHttpStack implements OkStack {
      * @return this http stact
      */
     public OkHttpStack trustAllCerts() {
-        this.mClient.setSslSocketFactory(getTrustedFactory());
+        this.mClient = this.mClient.newBuilder().
+            sslSocketFactory(getTrustedFactory()).
+            build();
         return this;
     }
 
@@ -242,7 +255,9 @@ public class OkHttpStack implements OkStack {
      * @return
      */
     public OkHttpStack trustAllHosts() {
-        this.mClient.setHostnameVerifier(getTrustedVerifier());
+        this.mClient = this.mClient.newBuilder().
+            hostnameVerifier(getTrustedVerifier()).
+            build();
         return this;
     }
 
@@ -253,7 +268,9 @@ public class OkHttpStack implements OkStack {
      * @return this http stack
      */
     public OkHttpStack setHostnameVerifier(HostnameVerifier verifier) {
-        this.mClient.setHostnameVerifier(verifier);
+        this.mClient = this.mClient.newBuilder().
+            hostnameVerifier(verifier).
+            build();
         return this;
     }
 
