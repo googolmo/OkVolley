@@ -4,26 +4,15 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
 import com.android.volley.VolleyLog;
-import com.squareup.okhttp.Dispatcher;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by GoogolMo on 10/22/13.
@@ -46,57 +35,13 @@ public class OkHttpStack implements OkStack {
     }
 
 
-    public OkHttpStack() {
-        this(null);
+    public OkHttpStack(OkHttpClient client) {
+        this(null, client);
     }
 
-    public OkHttpStack(UrlRewriter urlRewriter) {
-        this(urlRewriter, null);
-    }
-
-    public OkHttpStack(UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
-        this.mClient = new OkHttpClient();
+    public OkHttpStack(UrlRewriter urlRewriter, OkHttpClient client) {
         this.mUrlRewriter = urlRewriter;
-        this.mClient.setSslSocketFactory(sslSocketFactory);
-    }
-
-    /**
-     * set dispatcher to OkHttpClient
-     * @param dispatcher {@link OkHttpClient}.setDispatcher({@link Dispatcher})
-     */
-    public void setDispatcher(Dispatcher dispatcher) {
-        if (dispatcher == null) {
-            return;
-        }
-        this.mClient.setDispatcher(dispatcher);
-    }
-
-    public void addInterceptor(Interceptor interceptor) {
-        if (interceptor == null) {
-            return;
-        }
-        this.mClient.interceptors().add(interceptor);
-    }
-
-    public void addNetworkInterceptor(Interceptor interceptor) {
-        if (interceptor == null) {
-            return;
-        }
-        this.mClient.networkInterceptors().add(interceptor);
-    }
-
-    public void removeInterceptor(Interceptor interceptor) {
-        if (interceptor == null) {
-            return;
-        }
-        this.mClient.interceptors().remove(interceptor);
-    }
-
-    public void removeNetworkInterceptor(Interceptor interceptor) {
-        if (interceptor == null) {
-            return;
-        }
-        this.mClient.networkInterceptors().remove(interceptor);
+        this.mClient = client;
     }
 
     /**
@@ -125,7 +70,7 @@ public class OkHttpStack implements OkStack {
             url = rewritten;
         }
 
-        com.squareup.okhttp.Request.Builder builder = new com.squareup.okhttp.Request.Builder();
+        okhttp3.Request.Builder builder = new okhttp3.Request.Builder();
         builder.url(url);
 
         for (String headerName : map.keySet()) {
@@ -150,7 +95,7 @@ public class OkHttpStack implements OkStack {
     }
 
     /* package */
-    static void setConnectionParametersForRequest(com.squareup.okhttp.Request.Builder builder,
+    static void setConnectionParametersForRequest(okhttp3.Request.Builder builder,
                                                   Request<?> request) throws IOException, AuthFailureError {
 
         byte[] postBody = null;
@@ -167,7 +112,8 @@ public class OkHttpStack implements OkStack {
                     // Prepare output. There is no need to set Content-Length explicitly,
                     // since this is handled by HttpURLConnection using the size of the prepared
                     // output stream.
-                    builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
+                    builder.post(RequestBody
+                            .create(MediaType.parse(request.getBodyContentType()), postBody));
                     if (VolleyLog.DEBUG) {
                         VolleyLog.d("RequestHeader: %1$s:%2$s", OkRequest.HEADER_CONTENT_TYPE, request.getPostBodyContentType());
                     }
@@ -226,80 +172,80 @@ public class OkHttpStack implements OkStack {
 
     }
 
-    /**
-     * set request trust all certs include untrusts
-     *
-     * @return this http stact
-     */
-    public OkHttpStack trustAllCerts() {
-        this.mClient.setSslSocketFactory(getTrustedFactory());
-        return this;
-    }
-
-    /**
-     * set request trust all hosts include hosts with untrusts
-     *
-     * @return
-     */
-    public OkHttpStack trustAllHosts() {
-        this.mClient.setHostnameVerifier(getTrustedVerifier());
-        return this;
-    }
-
-    /**
-     * set custom host name verifier
-     *
-     * @param verifier verifier
-     * @return this http stack
-     */
-    public OkHttpStack setHostnameVerifier(HostnameVerifier verifier) {
-        this.mClient.setHostnameVerifier(verifier);
-        return this;
-    }
-
-    private static SSLSocketFactory TRUSTED_FACTORY;
-    private static HostnameVerifier TRUSTED_VERIFIER;
-
-    private static SSLSocketFactory getTrustedFactory() {
-        if (TRUSTED_FACTORY == null) {
-            final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-
-                public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[0];
-                }
-
-                public void checkClientTrusted(X509Certificate[] chain, String authType) {
-                    // Intentionally left blank
-                }
-
-                public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                    // Intentionally left blank
-                }
-            }};
-            try {
-                SSLContext context = SSLContext.getInstance("TLS");
-                context.init(null, trustAllCerts, new SecureRandom());
-                TRUSTED_FACTORY = context.getSocketFactory();
-            } catch (GeneralSecurityException e) {
-                IOException ioException = new IOException(
-                        "Security exception configuring SSL context");
-                ioException.initCause(e);
-            }
-        }
-        return TRUSTED_FACTORY;
-    }
-
-    private static HostnameVerifier getTrustedVerifier() {
-        if (TRUSTED_VERIFIER == null)
-            TRUSTED_VERIFIER = new HostnameVerifier() {
-
-                public boolean verify(String hostname, SSLSession session) {
-                    return true;
-                }
-            };
-
-        return TRUSTED_VERIFIER;
-    }
+//    /**
+//     * set request trust all certs include untrusts
+//     *
+//     * @return this http stact
+//     */
+//    public OkHttpStack trustAllCerts() {
+//        this.mClient.setSslSocketFactory(getTrustedFactory());
+//        return this;
+//    }
+//
+//    /**
+//     * set request trust all hosts include hosts with untrusts
+//     *
+//     * @return
+//     */
+//    public OkHttpStack trustAllHosts() {
+//        this.mClient.setHostnameVerifier(getTrustedVerifier());
+//        return this;
+//    }
+//
+//    /**
+//     * set custom host name verifier
+//     *
+//     * @param verifier verifier
+//     * @return this http stack
+//     */
+//    public OkHttpStack setHostnameVerifier(HostnameVerifier verifier) {
+//        this.mClient.setHostnameVerifier(verifier);
+//        return this;
+//    }
+//
+//    private static SSLSocketFactory TRUSTED_FACTORY;
+//    private static HostnameVerifier TRUSTED_VERIFIER;
+//
+//    private static SSLSocketFactory getTrustedFactory() {
+//        if (TRUSTED_FACTORY == null) {
+//            final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+//
+//                public X509Certificate[] getAcceptedIssuers() {
+//                    return new X509Certificate[0];
+//                }
+//
+//                public void checkClientTrusted(X509Certificate[] chain, String authType) {
+//                    // Intentionally left blank
+//                }
+//
+//                public void checkServerTrusted(X509Certificate[] chain, String authType) {
+//                    // Intentionally left blank
+//                }
+//            }};
+//            try {
+//                SSLContext context = SSLContext.getInstance("TLS");
+//                context.init(null, trustAllCerts, new SecureRandom());
+//                TRUSTED_FACTORY = context.getSocketFactory();
+//            } catch (GeneralSecurityException e) {
+//                IOException ioException = new IOException(
+//                        "Security exception configuring SSL context");
+//                ioException.initCause(e);
+//            }
+//        }
+//        return TRUSTED_FACTORY;
+//    }
+//
+//    private static HostnameVerifier getTrustedVerifier() {
+//        if (TRUSTED_VERIFIER == null)
+//            TRUSTED_VERIFIER = new HostnameVerifier() {
+//
+//                public boolean verify(String hostname, SSLSession session) {
+//                    return true;
+//                }
+//            };
+//
+//        return TRUSTED_VERIFIER;
+//    }
 
 
 }

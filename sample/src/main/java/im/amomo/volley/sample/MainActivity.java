@@ -3,14 +3,14 @@ package im.amomo.volley.sample;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 
 import im.amomo.volley.sample.fragment.RequestFragment;
 
 /**
  * Created by GoogolMo on 12/30/13.
  */
-public class MainActivity extends ActionBarActivity implements DrawerFragment.DrawerCallbacks {
+public class MainActivity extends AppCompatActivity implements DrawerFragment.DrawerCallbacks {
 
 
     private DrawerLayout mDrawerLayout;

@@ -3,9 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 dependencies {
-    compile('com.squareup.okhttp:okhttp:2.6.0') {
-        exclude group: 'com.squareup.okio', module: 'okio'
-    }
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'com.squareup.okio:okio:1.6.0'
     compile 'com.mcxiaoke.volley:library:1.0.19'
 }

@@ -16,7 +16,6 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ByteArrayPool;
-import com.squareup.okhttp.Response;
 
 import org.apache.http.conn.ConnectTimeoutException;
 
@@ -33,6 +32,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
+import okhttp3.Response;
 import okio.Buffer;
 import okio.GzipSource;
 
