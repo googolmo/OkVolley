@@ -1,14 +1,10 @@
-plugins {
-    id "com.jfrog.bintray" version "1.0"
-}
+// plugins {
+//     id "com.jfrog.bintray" version "1.0"
+// }
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
 
 dependencies {
-    compile('com.squareup.okhttp:okhttp:2.6.0') {
-        exclude group: 'com.squareup.okio', module: 'okio'
-    }
-    compile 'com.squareup.okio:okio:1.6.0'
+    compile 'com.squareup.okhttp3:okhttp:3.0.0-RC1'
     compile 'com.mcxiaoke.volley:library:1.0.19'
 }
 
@@ -40,7 +36,16 @@ android {
     }
 }
 
-apply from: 'https://raw.githubusercontent.com/googolmo/gradle-mvn-push/master/bintray.gradle'
+uploadArchives {
+  repositories {
+    flatDir {
+      dirs '../../local_repo'
+    }
+  }
+}
+
+
+// apply from: 'https://raw.githubusercontent.com/googolmo/gradle-mvn-push/master/bintray.gradle'
 
 
 
